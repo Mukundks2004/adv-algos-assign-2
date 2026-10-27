@@ -4,7 +4,7 @@ Group of three, hard cap 15 minutes for the whole thing. This is a cue sheet, no
 
 ## Open (about 1 minute, whoever is starting)
 
-We multiply big integers and compare a few ways of doing it. Schoolbook, an FFT, and the OpenAI preprint from 23 September 2026, with GMP as the baseline once we run the harness. Karatsuba is still a stub, so it is not in the times. Theme is the usual one: the paper with the best big-O is not the thing you would actually call.
+We multiply big integers and compare a few ways of doing it. Schoolbook, an FFT, and the OpenAI preprint from 23 September 2026, timed with GMP in the same harness. Karatsuba is still a stub, so it is not in the times. Theme is the usual one: the paper with the best big-O is not the thing you would actually call.
 
 ## Schoolbook (Mukund, about 2 minutes)
 
@@ -30,12 +30,12 @@ The break case. Digits 3 and 5, times 7 and 11. Places are 21, then 68, then 55.
 
 ## Times (about 2 minutes)
 
-Table is in `Deliverables/report.md` and `Deliverables/local-timings.csv`. This PC, gcc -O2, no GMP linked.
+Table is in `Deliverables/report.md` and `Deliverables/local-timings.csv`. Harness, isolated mode, checked against GMP before the clock started.
 
-Schoolbook won at 16 and 64 limbs. I expected my code to pass it by 1024 limbs. At 1024, schoolbook took 1036 microseconds and mine took 1951. Mine was ahead at 4096, 9236 against 17585. The FFT was faster than both from 256 limbs up. At 4096 the FFT took 4726 microseconds.
+Schoolbook won among our three at 16 and 64 limbs. GMP won those too, 0.169 us against 0.240 us for schoolbook at 16 limbs. I expected my code to pass schoolbook by 1024 limbs. At 1024, schoolbook took 969 microseconds and mine took 2192. Schoolbook was still ahead at 2048, 3970 against 4592. Mine was ahead at 4096, 10230 against 15456. The FFT passed schoolbook at 512 limbs, not at 256. At 4096 the FFT took 5252 microseconds and GMP took 637.
 
-On the sizes we ran, the FFT was the fastest of the three.
+On the sizes we ran, GMP was the fastest. The FFT was the fastest of the three we wrote.
 
 ## Close (20 seconds)
 
-Next is to move the twiddle powers out of the timed call, run the real harness against GMP, and put Karatsuba on the same plot once it exists.
+Next is to move the twiddle powers out of the timed call, and put Karatsuba on the same plot once it exists.

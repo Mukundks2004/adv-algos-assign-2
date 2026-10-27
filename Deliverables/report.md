@@ -67,57 +67,59 @@ Leaving these as they were.
 4. Nothing in the plot looks like the paper's extra log-factor saving. This binary does not contain that saving.
 5. At a fixed n, zeros, all-ones, and random limbs give the same ranking. None of these three skips a zero limb.
 
-No prediction for Karatsuba. That file still aborts. No prediction against GMP either. GMP was not linked on the machine that produced the table.
+No prediction for Karatsuba. That file still aborts. No prediction against GMP either.
 
 ## 3. How the times were taken
 
-Same random limbs for all three algorithms. Graph generation is not in the timer. Setup runs first (FFT twiddles, NTT bit-reversal). Then one correctness call against schoolbook, then a median of five calls, or three calls at 2048 and 4096 limbs.
+`Code/Benchmark` in isolated mode, `--algos schoolbook,fft,openai-nlogn,gmp`, sizes 16, 32, 64, 128, 256, 512, 1024, 2048, 4096. Karatsuba was left out because that file still aborts.
 
-Machine: AMD Ryzen 7 6800H, 16 GB RAM, gcc 13.2.0, `-O2 -std=gnu99`. This MinGW install has no `libgmp`, so the table is not `./Benchmark` against `mpn_mul_n`. The products did match schoolbook, including all-ones, and schoolbook is the obvious reference. Rerun the harness on a box with GMP before this table is treated as the official one. Raw rows: `Deliverables/local-timings.csv`.
+The harness builds one random operand pair per size, with the top bit set so the value really has n limbs. It checks the product against `mpn_mul_n` before timing. Setup runs first. The timed region is repeated `custom_mul_n` calls only. Iterations are chosen to land near 0.25 seconds. The table is the mean time per call, `per_op_us` in `Deliverables/local-timings.csv`.
 
-Sizes: 16, 32, 64, 128, 256, 512, 1024, 2048, 4096 limbs. At 256 limbs we also timed all-zero and all-ones, just to see if the bit pattern moved the ranking.
+Machine: AMD Ryzen 7 6800H, 16 GB RAM, gcc 13.2.0, `-O2 -std=gnu99`, GMP 6.3.0. Every row in that CSV passed the GMP check. If one had disagreed, the harness would have stopped.
+
+At 256 limbs, zeros, all-ones, and a random pair were timed separately, five calls, median, also checked with `mpn_mul_n`. That is not the same statistic as the harness mean, so those three sit in the text and not in the main table.
 
 ## 4. Results
 
-Median time in microseconds.
+Mean time per call, in microseconds, from the harness.
 
-| limbs | schoolbook | fft | openai-nlogn |
-|---:|---:|---:|---:|
-| 16 | 0.400 | 2.500 | 24.200 |
-| 32 | 1.000 | 5.500 | 42.200 |
-| 64 | 4.200 | 12.000 | 88.200 |
-| 128 | 16.600 | 26.300 | 194.100 |
-| 256 | 65.100 | 58.900 | 420.200 |
-| 512 | 258.900 | 145.200 | 920.400 |
-| 1024 | 1035.500 | 404.400 | 1951.400 |
-| 2048 | 4306.200 | 1000.000 | 4147.700 |
-| 4096 | 17584.800 | 4725.600 | 9236.100 |
+| limbs | schoolbook | fft | openai-nlogn | gmp |
+|---:|---:|---:|---:|---:|
+| 16 | 0.240 | 2.831 | 27.462 | 0.169 |
+| 32 | 0.996 | 6.892 | 46.595 | 0.567 |
+| 64 | 3.825 | 13.570 | 92.646 | 1.542 |
+| 128 | 16.116 | 30.530 | 216.046 | 4.955 |
+| 256 | 63.895 | 72.776 | 473.262 | 14.740 |
+| 512 | 245.438 | 167.922 | 1008.783 | 37.628 |
+| 1024 | 969.122 | 396.180 | 2191.765 | 93.892 |
+| 2048 | 3970.370 | 971.355 | 4592.350 | 365.469 |
+| 4096 | 15456.350 | 5251.702 | 10230.032 | 637.013 |
 
-Prediction 1 held. At 16 limbs the times are 0.400, 2.500, 24.200 us. At 64 limbs they are 4.200, 12.000, 88.200 us.
+GMP is the fastest on every row. At 16 limbs it is 0.169 us against 0.240 us for schoolbook. At 4096 limbs it is 637.013 us, against 5251.702 us for the FFT, 10230.032 us for the NTT, and 15456.350 us for schoolbook. That is about 8 times the FFT and about 24 times schoolbook.
 
-Prediction 2 missed the hopeful half. At 1024 limbs schoolbook is still faster, 1035.500 us against 1951.400 us. The NTT is slightly ahead at 2048 (4147.700 vs 4306.200) and clearly ahead at 4096 (9236.100 vs 17584.800). So the crossover on this PC is between 1024 and 2048, and 2048 is close enough that another compiler could move it. The "by 4096" half of the prediction held.
+Prediction 1 held for the three we named. Schoolbook is still ahead of FFT and the NTT at 16 limbs (0.240, 2.831, 27.462 us) and at 64 limbs (3.825, 13.570, 92.646 us). GMP is ahead of schoolbook there too.
 
-Prediction 3 held. FFT beat the NTT on every row. It passed schoolbook at 256 limbs (58.900 vs 65.100). At 128 limbs schoolbook was still ahead of FFT (16.600 vs 26.300).
+Prediction 2 missed the hopeful half again, and the crossover is later than the old non-GMP run. At 1024 limbs schoolbook is 969.122 us and the NTT is 2191.765 us. At 2048 limbs schoolbook is still ahead, 3970.370 us against 4592.350 us. The NTT is ahead at 4096 limbs, 10230.032 us against 15456.350 us. The "by 4096" half of the prediction held. The crossover on this PC is between 2048 and 4096 limbs.
 
-Prediction 4 held. At 4096 limbs FFT took 4725.600 us and the NTT took 9236.100 us. FFT is still about twice as fast. From 16 limbs to 4096 the NTT went from about 60 times schoolbook down to about half of schoolbook. That is the n log n shape showing up late. It is the modular convolution, not the paper's tape theorem.
+Prediction 3 held for the NTT and missed the schoolbook half by one size. FFT beat the NTT on every row. At 256 limbs schoolbook is still slightly ahead of FFT, 63.895 us against 72.776 us. FFT is ahead at 512 limbs, 167.922 us against 245.438 us. At 128 limbs schoolbook was also ahead of FFT (16.116 vs 30.530).
 
-Prediction 5, only checked at 256 limbs. Random: NTT 420.200 us, schoolbook 65.100 us. All zeros: NTT 320.100 us, schoolbook 65.500 us. All ones: NTT 346.900 us, schoolbook 65.500 us. Schoolbook stayed faster. The NTT time moved by about 100 us and the zero run was later, so some of that is cache. The ranking did not change.
+Prediction 4 held. At 4096 limbs the FFT took 5251.702 us and the NTT took 10230.032 us, still about twice as long. From 16 limbs to 4096 the NTT went from about 100 times schoolbook down to about two thirds of schoolbook. That is the n log n shape showing up late. It is the modular convolution, not the paper's tape theorem.
 
-The FFT column also matched schoolbook on every size in the table, including 4096 limbs where it has switched to 8-bit digits.
+Prediction 5 held on the ranking. At 256 limbs, median of five calls, checked with `mpn_mul_n`. Zeros: NTT 329.400 us, schoolbook 55.800 us. All ones: NTT 354.900 us, schoolbook 55.500 us. Random: NTT 435.300 us, schoolbook 55.700 us. Schoolbook stayed faster. The NTT time moved by about 100 us. The ranking did not.
 
 ## 5. What surprised us
 
-Schoolbook still being almost twice as fast at 1024 limbs. 1035 us against 1951 us. 1024 limbs felt "large enough" for an n log n convolution. The modular reduction, the twiddles being rebuilt inside the call, and four 16-bit digits per limb keep the constant high enough that the tight double loop wins through 1024 limbs.
+Schoolbook still being faster at 2048 limbs. 3970 us against 4592 us for the NTT. 1024 limbs already felt large enough for an n log n convolution, and 2048 still was not. The modular reduction, the twiddles being rebuilt inside the call, and four 16-bit digits per limb keep the constant high enough that the tight double loop wins through 2048 limbs. The NTT only pulls ahead at 4096, 10230 us against 15456 us.
 
-The other one is the right-hand column. The OpenAI preprint is the asymptotically faster paper. In this process the FFT is the fastest of the three from 256 limbs on, and at 4096 limbs it is about twice the NTT and about 3.7 times schoolbook. The title of the preprint does not show up in the binary that was timed.
+The other one is GMP, and then the FFT. GMP wins every size, and at 4096 limbs it is about 8 times the FFT. The OpenAI preprint is the asymptotically faster paper. In this process the FFT is the fastest of our three from 512 limbs on, and at 4096 limbs it is about twice the NTT. The title of the preprint does not show up in the binary that was timed.
 
 ## 6. What we'd do next
 
-Move the NTT twiddle powers into `OpenAiSetup` and time again. They are recomputed on every call, and the harness was written so that work can sit outside the timer. Then run the same sizes through `./Benchmark` with GMP linked, and add Karatsuba to the same rows once Jack's file runs. One more size, 8192 limbs, would show whether the NTT's lead over schoolbook keeps growing the way n log n versus n^2 should.
+Move the NTT twiddle powers into `OpenAiSetup` and time again. They are recomputed on every call, and the harness already times only `mul` after `setup`. Add Karatsuba to the same rows once Jack's file runs. One more size, 8192 limbs, would show whether the NTT's lead over schoolbook keeps growing the way n log n versus n^2 should.
 
 ## 7. Who did what
 
-Mukund set up the repo, the harness, schoolbook, the FFT, and the GMP wrapper. Jack has Karatsuba. That file still aborts, so there is nothing to time. Bailey wrote `OpenAiMul.c`, checked it against schoolbook (1 limb through 4096, all-ones, a second call on the same setup, and in-place squares), and took the local table. The group report still needs Jack's section and a GMP rerun. Bailey records the OpenAI segment. Schoolbook and FFT are Mukund's to explain.
+Mukund set up the repo, the harness, schoolbook, the FFT, and the GMP wrapper. Jack has Karatsuba. That file still aborts, so there is nothing to time. Bailey wrote `OpenAiMul.c`, checked it against `mpn_mul_n` through the harness, and took the table in `Deliverables/local-timings.csv`. The group report still needs Jack's section. Bailey records the OpenAI segment. Schoolbook and FFT are Mukund's to explain.
 
 ## 8. AI use
 

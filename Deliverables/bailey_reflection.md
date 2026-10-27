@@ -4,7 +4,7 @@ About my file, `Code/OpenAiMul.c`.
 
 ## Worst case
 
-The slow inputs are the long ones. Every n-limb multiply builds a transform of length at least 8n, four 16-bit digits per limb, then the next power of two. Zero limbs do not skip that. At 256 limbs an all-zero pair took 320.100 us, a random pair 420.200 us, and schoolbook on the zeros 65.500 us. Schoolbook stayed faster.
+The slow inputs are the long ones. Every n-limb multiply builds a transform of length at least 8n, four 16-bit digits per limb, then the next power of two. Zero limbs do not skip that. At 256 limbs an all-zero pair took 329.400 us, a random pair 435.300 us, and schoolbook on the zeros 55.800 us. Those three were checked with `mpn_mul_n`. Schoolbook stayed faster.
 
 If a coefficient could reach the modulus 2^64 - 2^32 + 1, the function switches to the schoolbook loop. The preprint's fast tape machine only starts after log2(n) is past 2^(2^75). I cannot feed it an input that big.
 
@@ -18,8 +18,8 @@ I then compared the output with schoolbook for every n from 1 to 48, and at the 
 
 ## What I would do differently
 
-I would compute the twiddle powers in `OpenAiSetup`. They are rebuilt on every call, and the harness already times only `mul` after `setup`. I would also have started from `./Benchmark` with GMP linked. The table in the report should still be checked against `mpn_mul_n` before anyone treats it as final.
+I would compute the twiddle powers in `OpenAiSetup`. They are rebuilt on every call, and the harness already times only `mul` after `setup`. The table in the report is that harness, checked against `mpn_mul_n`.
 
 ## What I didn't get at the start
 
-I thought the preprint title meant this C function would pull away from the FFT once n was large. The O(n (lg n)^(1-kappa)) line is a tape-cost theorem. The writeup sends every length we can store to schoolbook, and the saving over O(n log n) is a power kappa = 2^(-182) on the log. The routine I can walk through is the digit convolution: the length stops the wrap, the inverse transform divides by the length, and the carry rebuilds the limbs. The 4096-limb row, 9236.100 us against 4725.600 us for the FFT, is that routine. The tape theorem is a separate claim.
+I thought the preprint title meant this C function would pull away from the FFT once n was large. The O(n (lg n)^(1-kappa)) line is a tape-cost theorem. The writeup sends every length we can store to schoolbook, and the saving over O(n log n) is a power kappa = 2^(-182) on the log. The routine I can walk through is the digit convolution: the length stops the wrap, the inverse transform divides by the length, and the carry rebuilds the limbs. The 4096-limb harness row, 10230.032 us against 5251.702 us for the FFT, is that routine. The tape theorem is a separate claim.
