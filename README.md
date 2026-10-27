@@ -37,7 +37,7 @@ make
 The benchmarking function can be configured in many different ways, as shown below:
 
 ```sh
-./Benchmark [--mode isolated|e2e|both] [--sizes 16,64,256,...] [--iters N] [--warmup W] [--steps S] [--seed X] [--algos schoolbook,fft,gmp]
+./Benchmark [--mode isolated|e2e|both] [--sizes 16,64,256,...] [--iters N] [--warmup W] [--steps S] [--seed X] [--algos schoolbook,fft,openai-nlogn,gmp]
 ```
 
 - isolated mode times repeated `custom_mul_n` calls on fixed-size random operands.
@@ -45,7 +45,7 @@ The benchmarking function can be configured in many different ways, as shown bel
 - Each run verifies results against GMP before timing, warms up, touches all buffers, and prints CSV:
   `mode,algorithm,n_limbs,iterations,total_ms,per_op_us`.
 - `--iters 0` (default) auto-selects iterations to target ~0.25 s for isolated runs; e2e defaults to 5 iterations.
-- Unimplemented algorithms (Karatsuba, OpenAI) are skipped.
+- Unimplemented algorithms (Karatsuba) are skipped. `openai-nlogn` is implemented.
 
 Example: `./Benchmark --mode isolated --sizes 64,1024,16384 > results.csv`
 
