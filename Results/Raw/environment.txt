@@ -1,0 +1,15 @@
+date=2026-10-28T05:53:27Z
+os=Ubuntu 22.04.5 LTS
+kernel=Linux 6.18.54.1-microsoft-standard-WSL2
+cpu=13th Gen Intel(R) Core(TM) i9-13900H
+logical_cpus=20
+compiler=cc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0
+gmp=6.2.1
+cflags=-O2 -std=gnu99 -Wall -Wextra
+pinned_cpu=2
+reps=5
+sawtooth_reps=3
+karatsuba_threshold=16
+warmup=3
+e2e_steps=20
+e2e_iterations=5
