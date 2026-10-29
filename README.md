@@ -37,7 +37,7 @@ make
 The benchmarking function can be configured in many different ways, as shown below:
 
 ```sh
-./Benchmark [--mode isolated|e2e|both] [--sizes 16,64,256,...] [--iters N] [--warmup W] [--steps S] [--seed X] [--algos schoolbook,fft,gmp]
+./Benchmark [--mode isolated|e2e|both] [--sizes 16,64,256,...] [--iters N] [--warmup W] [--steps S] [--seed X] [--algos schoolbook,karatsuba,fft,gmp]
 ```
 
 - isolated mode times repeated `custom_mul_n` calls on fixed-size random operands.
@@ -45,8 +45,21 @@ The benchmarking function can be configured in many different ways, as shown bel
 - Each run verifies results against GMP before timing, warms up, touches all buffers, and prints CSV:
   `mode,algorithm,n_limbs,iterations,total_ms,per_op_us`.
 - `--iters 0` (default) auto-selects iterations to target ~0.25 s for isolated runs; e2e defaults to 5 iterations.
-- Unimplemented algorithms (Karatsuba, OpenAI) are skipped.
+- Unimplemented algorithms (OpenAI) are skipped.
 
 Example: `./Benchmark --mode isolated --sizes 64,1024,16384 > results.csv`
 
 The FFT uses 16-bit digits for n ≤ 2048 limbs and 8-bit digits above that to keep double precision rounding exact.
+
+Karatsuba falls back to schoolbook at or below `KARATSUBA_THRESHOLD` limbs (default 16). To sweep it, rebuild with an override, e.g. `make -B CFLAGS="-O2 -std=gnu99 -Wall -Wextra -DKARATSUBA_THRESHOLD=8"` (`-B` is needed because the Makefile does not track CFLAGS).
+
+## Reproduce the report's experiments
+
+Every measurement in the report comes from one script, and every table and figure from another (the analysis needs `python3-matplotlib`):
+
+```sh
+bash Code/RunExperiments.sh      # about 14 minutes; writes Results/Raw/*.csv
+python3 Code/AnalyseResults.py   # writes Results/Tables.md and Results/Figures/
+```
+
+`Results/README.md` describes the methodology, the machine the recorded results came from, and the findings.
