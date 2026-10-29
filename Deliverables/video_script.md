@@ -32,9 +32,9 @@ The break case. Digits 3 and 5, times 7 and 11. Places are 21, then 68, then 55.
 
 Table is in `Deliverables/report.md` and `Deliverables/local-timings.csv`. Harness, isolated mode, checked against GMP before the clock started.
 
-Schoolbook won among our three at 16 and 64 limbs. GMP won those too, 0.169 us against 0.240 us for schoolbook at 16 limbs. I expected my code to pass schoolbook by 1024 limbs. At 1024, schoolbook took 969 microseconds and mine took 2192. Schoolbook was still ahead at 2048, 3970 against 4592. Mine was ahead at 4096, 10230 against 15456. The FFT passed schoolbook at 512 limbs, not at 256. At 4096 the FFT took 5252 microseconds and GMP took 637.
+Schoolbook won among our three at 16 and 64 limbs. GMP won those too, 0.169 us against 0.240 us for schoolbook at 16 limbs. I expected my code to pass schoolbook by 1024 limbs. At 1024, schoolbook took 969 microseconds and mine took 2192. Schoolbook was still ahead at 2048. Mine was ahead of schoolbook at 4096, 10230 against 15456, and the FFT was still faster there, 5252. From 8192 limbs up mine is faster than the FFT as well: 20874 against 27839 at 8192, and 201808 against 391731 at 65536. At 262144 limbs mine took 930252 microseconds and the FFT took 3249783. GMP is still faster there, 77319 microseconds, about 12 times. That ratio is about the same as at 65536 limbs, so the run stops there. There is no later size in this sweep where mine passes GMP.
 
-On the sizes we ran, GMP was the fastest. The FFT was the fastest of the three we wrote.
+GMP was the fastest at every size we ran. Among the three we wrote, schoolbook wins while n is small, the FFT wins in the middle, and the digit convolution wins from 8192 limbs up.
 
 ## Close (20 seconds)
 

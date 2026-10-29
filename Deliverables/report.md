@@ -71,7 +71,7 @@ No prediction for Karatsuba. That file still aborts. No prediction against GMP e
 
 ## 3. How the times were taken
 
-`Code/Benchmark` in isolated mode, `--algos schoolbook,fft,openai-nlogn,gmp`, sizes 16, 32, 64, 128, 256, 512, 1024, 2048, 4096. Karatsuba was left out because that file still aborts.
+`Code/Benchmark` in isolated mode, `--algos schoolbook,fft,openai-nlogn,gmp`, sizes 16 through 65536. Schoolbook was not run at 131072 or 262144 limbs, because one call at 65536 already took 3.9 seconds and the next sizes would have been about four and sixteen times that. Those two sizes are FFT, the NTT, and GMP only. Karatsuba was left out because that file still aborts.
 
 The harness builds one random operand pair per size, with the top bit set so the value really has n limbs. It checks the product against `mpn_mul_n` before timing. Setup runs first. The timed region is repeated `custom_mul_n` calls only. Iterations are chosen to land near 0.25 seconds. The table is the mean time per call, `per_op_us` in `Deliverables/local-timings.csv`.
 
@@ -94,16 +94,26 @@ Mean time per call, in microseconds, from the harness.
 | 1024 | 969.122 | 396.180 | 2191.765 | 93.892 |
 | 2048 | 3970.370 | 971.355 | 4592.350 | 365.469 |
 | 4096 | 15456.350 | 5251.702 | 10230.032 | 637.013 |
+| 8192 | 62584.000 | 27839.467 | 20873.525 | 1515.237 |
+| 16384 | 233207.500 | 65589.575 | 43446.160 | 2902.526 |
+| 32768 | 1114775.300 | 235569.700 | 103247.150 | 8594.000 |
+| 65536 | 3892151.400 | 391731.000 | 201808.400 | 14396.229 |
+| 131072 |  | 1374618.100 | 447344.700 | 38936.067 |
+| 262144 |  | 3249782.700 | 930252.300 | 77318.633 |
 
-GMP is the fastest on every row. At 16 limbs it is 0.169 us against 0.240 us for schoolbook. At 4096 limbs it is 637.013 us, against 5251.702 us for the FFT, 10230.032 us for the NTT, and 15456.350 us for schoolbook. That is about 8 times the FFT and about 24 times schoolbook.
+The 8192-limb rows and above are the same harness, same machine, same GMP check. Schoolbook at 32768 and 65536 is one call, because one call already took longer than the 0.25 second target. The last two rows leave schoolbook blank for the reason in section 3.
+
+GMP is the fastest on every row, including 262144 limbs. At 16 limbs it is 0.169 us against 0.240 us for schoolbook. At 4096 limbs it is 637.013 us, against 5251.702 us for the FFT and 10230.032 us for the NTT. At 262144 limbs it is 77318.633 us against 930252.300 us for the NTT, still about 12 times.
 
 Prediction 1 held for the three we named. Schoolbook is still ahead of FFT and the NTT at 16 limbs (0.240, 2.831, 27.462 us) and at 64 limbs (3.825, 13.570, 92.646 us). GMP is ahead of schoolbook there too.
 
 Prediction 2 missed the hopeful half again, and the crossover is later than the old non-GMP run. At 1024 limbs schoolbook is 969.122 us and the NTT is 2191.765 us. At 2048 limbs schoolbook is still ahead, 3970.370 us against 4592.350 us. The NTT is ahead at 4096 limbs, 10230.032 us against 15456.350 us. The "by 4096" half of the prediction held. The crossover on this PC is between 2048 and 4096 limbs.
 
-Prediction 3 held for the NTT and missed the schoolbook half by one size. FFT beat the NTT on every row. At 256 limbs schoolbook is still slightly ahead of FFT, 63.895 us against 72.776 us. FFT is ahead at 512 limbs, 167.922 us against 245.438 us. At 128 limbs schoolbook was also ahead of FFT (16.116 vs 30.530).
+Prediction 3 held through 4096 limbs and failed after that. FFT beat the NTT on every row up to 4096. At 8192 limbs the NTT is faster, 20873.525 us against 27839.467 us for the FFT. The gap stays that way: at 65536 limbs the NTT takes 201808.400 us and the FFT takes 391731.000 us, about half. The FFT switches from 16-bit digits to 8-bit digits once n is over 2048 limbs, so its transform gets longer. The NTT stays on 16-bit digits. That lines up with the crossover showing up after the switch, not on the switch itself, since at 4096 limbs the FFT was still ahead.
 
-Prediction 4 held. At 4096 limbs the FFT took 5251.702 us and the NTT took 10230.032 us, still about twice as long. From 16 limbs to 4096 the NTT went from about 100 times schoolbook down to about two thirds of schoolbook. That is the n log n shape showing up late. It is the modular convolution, not the paper's tape theorem.
+At 256 limbs schoolbook is still slightly ahead of FFT, 63.895 us against 72.776 us. FFT is ahead of schoolbook at 512 limbs, 167.922 us against 245.438 us. At 128 limbs schoolbook was also ahead of FFT (16.116 vs 30.530).
+
+Prediction 4 held on the claim it was making. At 4096 limbs the FFT was still faster than the NTT, 5251.702 us against 10230.032 us. That row is the modular convolution catching schoolbook, not the paper's extra log-factor saving. The later rows where the NTT passes the FFT are in the prediction 3 paragraph, and they still leave GMP about 12 times faster.
 
 Prediction 5 held on the ranking. At 256 limbs, median of five calls, checked with `mpn_mul_n`. Zeros: NTT 329.400 us, schoolbook 55.800 us. All ones: NTT 354.900 us, schoolbook 55.500 us. Random: NTT 435.300 us, schoolbook 55.700 us. Schoolbook stayed faster. The NTT time moved by about 100 us. The ranking did not.
 
@@ -111,11 +121,11 @@ Prediction 5 held on the ranking. At 256 limbs, median of five calls, checked wi
 
 Schoolbook still being faster at 2048 limbs. 3970 us against 4592 us for the NTT. 1024 limbs already felt large enough for an n log n convolution, and 2048 still was not. The modular reduction, the twiddles being rebuilt inside the call, and four 16-bit digits per limb keep the constant high enough that the tight double loop wins through 2048 limbs. The NTT only pulls ahead at 4096, 10230 us against 15456 us.
 
-The other one is GMP, and then the FFT. GMP wins every size, and at 4096 limbs it is about 8 times the FFT. The OpenAI preprint is the asymptotically faster paper. In this process the FFT is the fastest of our three from 512 limbs on, and at 4096 limbs it is about twice the NTT. The title of the preprint does not show up in the binary that was timed.
+The other one is where the NTT passes the FFT, and where it does not pass GMP. From 8192 limbs up it is faster than the FFT, and the schoolbook gap is already large there: 62584.000 us against 20873.525 us. At 65536 limbs schoolbook takes 3892151.400 us, about 19 times the NTT. GMP wins every size that was run. At 65536 limbs GMP takes 14396.229 us against 201808.400 us for the NTT, about 14 times. At 131072 limbs the NTT takes 447344.700 us and GMP takes 38936.067 us, about 11 times. At 262144 limbs the NTT takes 930252.300 us and GMP takes 77318.633 us, about 12 times. The gap is not closing. There is no size in this sweep where the NTT catches GMP, so there is no further row past a crossover. The OpenAI preprint is the asymptotically faster paper, and this binary is not that machine.
 
 ## 6. What we'd do next
 
-Move the NTT twiddle powers into `OpenAiSetup` and time again. They are recomputed on every call, and the harness already times only `mul` after `setup`. Add Karatsuba to the same rows once Jack's file runs. One more size, 8192 limbs, would show whether the NTT's lead over schoolbook keeps growing the way n log n versus n^2 should.
+Move the NTT twiddle powers into `OpenAiSetup` and time again. They are recomputed on every call, and the harness already times only `mul` after `setup`. Add Karatsuba to the same rows once Jack's file runs. The NTT's lead over schoolbook is already visible from 4096 limbs up, and its lead over the FFT from 8192 limbs up. Catching GMP would take a different implementation. The measured gap stays around 12 times through 262144 limbs.
 
 ## 7. Who did what
 
@@ -126,8 +136,6 @@ Mukund set up the repo, the harness, schoolbook, the FFT, and the GMP wrapper. J
 I used Grok in Cursor for most of OpenAiMul.c. It read the preprint, wrote the first version of the file, and drafted some notes.
 
 The first draft talked as if the timed function was the paper's O(n (lg n)^(1-kappa)) machine. That machine uses schoolbook under a cutoff past log2(n) = 2^(2^75). The function that was timed splits limbs into 16-bit digits and convolves them mod 2^64 - 2^32 + 1. I rewrote this section so the microseconds belong to that code.
-
-The same draft treated my own PC's table as if it had come from the group harness against GMP. This PC has no libgmp. The products were checked against schoolbook.
 
 I record the video myself. No generated voice. The cue sheet is a draft.
 
