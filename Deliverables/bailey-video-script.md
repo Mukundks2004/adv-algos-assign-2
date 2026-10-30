@@ -30,8 +30,8 @@ If the length is only 2, the 55 wraps onto the 21 and the low digit becomes 76. 
 
 ## 3:10 to 3:50. Slide 7
 
-The harness checked every product against GMP before the clock started. I kept the table through 16,384 limbs. GMP is fastest on every row. At 16 limbs mine takes about 27 microseconds and schoolbook takes about a quarter of a microsecond. At 2,048 limbs I am still behind schoolbook, 4.6 milliseconds against 4.0. At 4,096 I pass schoolbook, 10.2 against 15.5, and the FFT is still faster at 5.3. At 8,192 I pass the FFT, 20.9 against 27.8. At 16,384 I take 43 milliseconds, the FFT takes 66, schoolbook takes 233, and GMP takes 2.9. That is about 15 times GMP.
+The harness checked every product against GMP before the clock started. I kept the table through 16,384 limbs, and this run includes Karatsuba. GMP is fastest on every row. Karatsuba is faster than mine at every size in the table. At 16 limbs mine takes about 25 microseconds and schoolbook takes about 0.22. At 2,048 limbs I am still behind schoolbook, 4.3 milliseconds against 3.6. At 4,096 I pass schoolbook, 9.6 against 14.9, and the FFT is still faster at 4.9. At 8,192 the FFT is still faster, 11.4 against 20.1. At 16,384 I edge the FFT, 44.1 against 47.5. Karatsuba is at 18.4, schoolbook is at 233, and GMP is at 2.6. That is about 17 times GMP.
 
 ## 3:50 to 4:05. Slide 8
 
-The FFT switches to 8-bit digits above 2,048 limbs, so its transform gets longer. Mine stays on 16-bit digits. Next I would build the twiddle powers in setup, outside the timer. A larger n on this file will not catch GMP.
+The FFT switches to 8-bit digits above 2,048 limbs, so its transform gets longer. Mine stays on 16-bit digits. On this run that only puts me ahead of the FFT at 16,384 limbs, and only by a small margin. Karatsuba is faster than both. Next I would build the twiddle powers in setup, outside the timer. A larger n on this file will not catch GMP.

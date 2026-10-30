@@ -38,7 +38,7 @@ The case that breaks is a short length. Digits 3 and 5, times 7 and 11, should l
 
 ## 9:50 to 12:40. Bailey, then Jack. Slides 10 to 12
 
-On my harness, GMP is fastest at every size through 16384 limbs. At 16 limbs GMP is 0.17 microseconds and schoolbook is 0.24. My code is 27. At 2048 limbs schoolbook is still ahead of mine, 4.0 milliseconds against 4.6. At 4096 mine passes schoolbook, 10.2 against 15.5, and the FFT is still faster at 5.3. At 8192 mine passes the FFT, 20.9 against 27.8. At 16384 mine is 43.4, the FFT is 65.6, schoolbook is 233, and GMP is 2.9. We did not keep sizes past 16384. Mine does not catch GMP in this table. The gap there is about 15 times.
+On my harness, GMP is fastest at every size through 16384 limbs. Karatsuba is faster than mine at every size in this table. At 16 limbs GMP is 0.14 microseconds and schoolbook is 0.22. My code is 25. At 2048 limbs schoolbook is still ahead of mine, 3.6 milliseconds against 4.3. At 4096 mine passes schoolbook, 9.6 against 14.9, and the FFT is still faster at 4.9. At 8192 the FFT is still ahead, 11.4 against 20.1. At 16384 mine edges the FFT, 44.1 against 47.5. Karatsuba is 18.4, schoolbook is 233, and GMP is 2.6. We did not keep sizes past 16384. Mine does not catch GMP in this table. The gap there is about 17 times.
 
 Jack, your grid is the other experiment. Karatsuba beats schoolbook from about 18 limbs, and on your machine the FFT does not clearly pass Karatsuba until around 100,000 limbs. Say the two machines out loud.
 
@@ -46,7 +46,7 @@ Jack, your grid is the other experiment. Karatsuba beats schoolbook from about 1
 
 Jack: I expected the FFT to pass Karatsuba inside the sizes we cared about. It was still behind at 32,768 limbs, and at 65,536 and 131,072 the repeats overlap. The FFT pays for padding, for the 8-bit digit switch, and for growing faster than n log n in our data.
 
-Bailey: I expected my convolution to pass schoolbook by 1024 limbs. It was still behind at 2048. I also expected the FFT to stay ahead of mine. It does until 4096, and from 8192 through 16384 mine is ahead. GMP stays ahead the whole way. The preprint's speed is not what this binary measures.
+Bailey: I expected my convolution to pass schoolbook by 1024 limbs. It was still behind at 2048. I also expected the FFT to stay ahead of mine. It does through 8192, and at 16384 mine is slightly ahead. Karatsuba is ahead of both. GMP stays ahead the whole way. The preprint's speed is not what this binary measures.
 
 ## 14:10 to 14:40. Whoever is closing. Slide 14
 
