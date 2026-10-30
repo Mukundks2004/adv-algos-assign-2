@@ -1,41 +1,53 @@
-# Video cue sheet
+# Video script
 
-Group of three, hard cap 15 minutes for the whole thing. This is a cue sheet, not a script to read word for word. Bailey records the OpenAI part himself.
+Hard cap for a group of three is 15 minutes. A group of two would be 12. Going to 17 would be over the cap. This script is written for about 14 minutes so there is a little room for pauses. If you run long, cut the result sentences, not the "what would break" lines.
 
-## Open (about 1 minute, whoever is starting)
+Jack's Karatsuba numbers come from his i9 runs with GMP 6.2.1. Bailey's OpenAI table comes from the Ryzen harness with GMP 6.3.0. Say that out loud so the two plots are not treated as one experiment.
 
-We multiply big integers and compare a few ways of doing it. Schoolbook, an FFT, and the OpenAI preprint from 23 September 2026, timed with GMP in the same harness. Karatsuba is still a stub, so it is not in the times. Theme is the usual one: the paper with the best big-O is not the thing you would actually call.
+Slides: `Deliverables/presentation.pptx` and `Downloads/adv-algo-assign-2-slides.pptx`.
 
-## Schoolbook (Mukund, about 2 minutes)
+## 0:00 to 1:20. Mukund. Slides 1 to 3
 
-Show `Code/SchoolbookMul.c`, the double loop.
+We are comparing ways to multiply big integers. The problem is two n-limb numbers, 64 bits per limb, little endian, and a 2n-limb product. That is the same contract as GMP's mpn_mul_n.
 
-Say: every limb of `a` multiplies every limb of `b`, and the product lands at index i+j. The carry is the high half of a double-width product. If you drop the carry, the low limb looks fine and the next limb is short. That is the whole algorithm. It uses no extra buffers. It wins while n is small because there is nothing else to do. It is Theta(n^2), so it falls off once the transforms have paid for their setup.
+We wrote schoolbook, Karatsuba, and an FFT, and Bailey wrote the OpenAI digit convolution. GMP is the library we check against and the practical baseline. The question is where the simple code wins, and where it does not.
 
-## FFT (Mukund, about 2 minutes)
+## 1:20 to 2:40. Mukund. Slide 4
 
-Show `Code/FftMul.c`, `digitBits` and `LoadDigits`.
+Schoolbook is the double loop in `SchoolbookMul.c`. Limb i of a multiplies every limb of b, and the product is added at index i plus j. The high half of that 128-bit product is the carry into the next limb.
 
-Say: the number is a polynomial in 2^16, or 2^8 once n is over 2048 limbs. The FFT turns multiplication into a pointwise product. The inverse FFT plus a carry puts the limbs back. The 8-bit switch is there because double precision stops being exact if the digits are wide and n is large. If that rounding is off by one, the carry builds the wrong integer. We checked it against schoolbook through 4096 limbs, including the 8-bit sizes.
+The invariant is that after limb i is finished, result[i + n] holds the carry out of that row, and every lower limb already includes the partial products that belong there. If you drop the carry, the low digits can still look plausible and the next limb is short by that carry. There is no extra buffer. It is Theta(n squared), so it wins only while n is small.
 
-## OpenAI (Bailey, about 2 to 3 minutes)
+## 2:40 to 5:20. Jack. Slides 5 and 6
 
-Slides are optional. The code is enough: `Code/OpenAiMul.c`.
+Karatsuba splits each number in half and replaces four half-size products with three. The middle term is z0 plus z2 minus the product of the two differences. The textbook version adds the halves instead. That sum can grow an extra limb, and for n = 2 or 3 the recursion never shrinks. The difference always fits in h limbs. The cost is a sign. If the two differences have the same sign you subtract, otherwise you add. Getting that case wrong still prints a normal-looking number. Our tests hit both signs, a zero difference, odd n, and squaring in one buffer.
 
-The preprint's theorem is a multitape bound, with kappa = 2^(-182). The paper uses schoolbook below a cutoff past log n = 2^(2^75). We do not run that.
+Below 16 limbs it calls the same schoolbook loop as the rest of the group. On my machine Karatsuba first beats schoolbook at 18 limbs, but only by a few percent until about 40. The cutoff from 14 to 28 limbs is within 3 percent of the best. Recursing all the way to one limb is 4 to 6 times slower. I expected a jump each time the recursion gained a level. From 256 limbs up, one extra limb at those boundaries moves the time by about 2 percent. The leaf work drops and the extra additions put it back.
 
-The function that is timed splits each 64-bit limb into four 16-bit digits, convolves them mod 2^64 - 2^32 + 1, and carries in base 2^16.
+## 5:20 to 7:20. Mukund. Slide 7
 
-The break case. Digits 3 and 5, times 7 and 11. Places are 21, then 68, then 55. Length 2 adds 55 onto 21 and gives 76. That is a different integer. The length has to be at least twice the digit count, and the inverse transform has to divide by that length. I checked the function against schoolbook from 1 limb through 4096, including all-ones and an in-place square.
+The FFT treats the number as digits of a polynomial. We use 16-bit digits, and 8-bit digits once n is over 2048 limbs, because the complex doubles have to round to the exact integer. If the rounding is off by one, the carry builds the wrong product. The length is padded up to a power of two. That padding is why the FFT time can sit flat across a band of sizes, and the 8-bit switch is why it jumps between 2048 and 3072 limbs on Jack's grid.
 
-## Times (about 2 minutes)
+## 7:20 to 9:50. Bailey. Slides 8 and 9
 
-Table is in `Deliverables/report.md` and `Deliverables/local-timings.csv`. Harness, isolated mode, checked against GMP before the clock started.
+My file is `OpenAiMul.c`. The preprint proves a multitape bound with kappa equal to 2 to the minus 182. That machine uses schoolbook below a cutoff past log n equals 2 to the 2 to the 75. We do not run that machine.
 
-Schoolbook won among our three at 16 and 64 limbs. GMP won those too, 0.169 us against 0.240 us for schoolbook at 16 limbs. I expected my code to pass schoolbook by 1024 limbs. At 1024, schoolbook took 969 microseconds and mine took 2192. Schoolbook was still ahead at 2048. Mine was ahead of schoolbook at 4096, 10230 against 15456, and the FFT was still faster there, 5252. From 8192 limbs up mine is faster than the FFT as well: 20874 against 27839 at 8192, and 201808 against 391731 at 65536. At 262144 limbs mine took 930252 microseconds and the FFT took 3249783. GMP is still faster there, 77319 microseconds, about 12 times. That ratio is about the same as at 65536 limbs, so the run stops there. There is no later size in this sweep where mine passes GMP.
+What I time splits each 64-bit limb into four 16-bit digits, convolves them modulo 2 to the 64 minus 2 to the 32 plus 1, and carries in base 2 to the 16.
 
-GMP was the fastest at every size we ran. Among the three we wrote, schoolbook wins while n is small, the FFT wins in the middle, and the digit convolution wins from 8192 limbs up.
+The case that breaks is a short length. Digits 3 and 5, times 7 and 11, should land as 21, then 68, then 55. Length 2 adds 55 onto 21 and the low digit becomes 76. That is a different integer. The length has to be at least twice the digit count, and the inverse transform has to divide by that length. I checked the products against GMP before trusting the times.
 
-## Close (20 seconds)
+## 9:50 to 12:40. Bailey, then Jack. Slides 10 to 12
 
-Next is to move the twiddle powers out of the timed call, and put Karatsuba on the same plot once it exists.
+On my harness, GMP is fastest at every size through 16384 limbs. At 16 limbs GMP is 0.17 microseconds and schoolbook is 0.24. My code is 27. At 2048 limbs schoolbook is still ahead of mine, 4.0 milliseconds against 4.6. At 4096 mine passes schoolbook, 10.2 against 15.5, and the FFT is still faster at 5.3. At 8192 mine passes the FFT, 20.9 against 27.8. At 16384 mine is 43.4, the FFT is 65.6, schoolbook is 233, and GMP is 2.9. We did not keep sizes past 16384. Mine does not catch GMP in this table. The gap there is about 15 times.
+
+Jack, your grid is the other experiment. Karatsuba beats schoolbook from about 18 limbs, and on your machine the FFT does not clearly pass Karatsuba until around 100,000 limbs. Say the two machines out loud.
+
+## 12:40 to 14:10. Jack, then Bailey. Slide 13
+
+Jack: I expected the FFT to pass Karatsuba inside the sizes we cared about. It was still behind at 32,768 limbs, and at 65,536 and 131,072 the repeats overlap. The FFT pays for padding, for the 8-bit digit switch, and for growing faster than n log n in our data.
+
+Bailey: I expected my convolution to pass schoolbook by 1024 limbs. It was still behind at 2048. I also expected the FFT to stay ahead of mine. It does until 4096, and from 8192 through 16384 mine is ahead. GMP stays ahead the whole way. The preprint's speed is not what this binary measures.
+
+## 14:10 to 14:40. Whoever is closing. Slide 14
+
+Next for me is to build the twiddle powers in setup, outside the timer. Next for the group is Karatsuba on the same harness rows. We would not catch GMP by running a larger n on this code.
