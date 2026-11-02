@@ -40,14 +40,27 @@ The benchmarking function can be configured in many different ways, as shown bel
 ./Benchmark [--mode isolated|e2e|both] [--sizes 16,64,256,...] [--iters N] [--warmup W] [--steps S] [--seed X] [--algos schoolbook,karatsuba,fft,openai-nlogn,gmp]
 ```
 
-- isolated mode times repeated `custom_mul_n` calls on fixed-size random operands.
-- **e2e**: times a chain of `--steps` modular squarings `x <- x^2 + 1 mod 2^(limbBits*n) - 1`, with the multiplication under test.
-- Each run verifies results against GMP before timing, warms up, touches all buffers, and prints CSV:
-  `mode,algorithm,n_limbs,iterations,total_ms,per_op_us`.
-- `--iters 0` (default) auto-selects iterations to target ~0.25 s for isolated runs; e2e defaults to 5 iterations.
-- Karatsuba and `openai-nlogn` are both implemented.
+- There are 3 benchmarking modes.
+  - isolated mode generates random operands and measures raw mult speed. It calls `mul(result, a, b, n)` repeatedly on the same inputs.
+  - e2e simulates a realistic workload; a chain of modular squarings. The time of this step includes `memcpy` and adds overhead, so it reduces the differences between algos.
+
+- `sizes` is a csv for how long the operands are in limbs. The default is `16,64,256,1024,409`. Sweeping through these values show changes as the size of the limbs changes.
+
+- `iters N` is how many timed repetitions there are to run.
+
+- `warmup W` is how many untimed multiplications to do before starting.
+
+- `steps S` is only for `e2e` and is how many chained modular multiplications should be done.
+
+- `seed X` is the seed for random operand generation, default seed is `12345`.
+
+- `algos` is a csv of which algos to run. The default is all of them. If they are not implemented they are skipped.
+
+- The harness writes the results to stdout
 
 Example: `./Benchmark --mode isolated --sizes 64,1024,16384 > results.csv`
+
+## Some more info
 
 The FFT uses 16-bit digits for n ≤ 2048 limbs and 8-bit digits above that to keep double precision rounding exact.
 
