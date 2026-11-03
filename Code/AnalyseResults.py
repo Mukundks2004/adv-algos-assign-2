@@ -276,6 +276,67 @@ def PlotRelativeToGmp(isolatedMedians, path):
     SaveFigure(figure, path)
 
 
+def PlotEndToEnd(endToEndMedians, isolatedMedians, steps, path):
+    figure, axes = NewFigure("End to end vs isolated", "Time per squaring in the modular squaring chain divided by isolated multiplication time. 1× = no difference.")
+    allSizes = []
+    allRatios = []
+    ends = []
+
+    for algorithm in ALGORITHMS:
+        chain = BySize(endToEndMedians, algorithm)
+        isolated = BySize(isolatedMedians, algorithm)
+        sizes = sorted(n for n in chain if n in isolated)
+        ratios = [chain[n] / steps / isolated[n] for n in sizes]
+        allSizes += sizes
+        allRatios += ratios
+        PlotLine(axes, sizes, ratios, SERIES_COLOURS[algorithm], algorithm)
+        ends.append((algorithm, sizes[-1], ratios[-1]))
+
+    LogSizeAxis(axes, allSizes)
+    axes.set_xlim(right=max(allSizes) * 2.6)
+    LogRatioAxis(axes, allRatios, [0.7, 0.8, 0.9, 1, 1.1, 1.2])
+    axes.axhline(1.0, color=BASELINE, linewidth=1.0, zorder=0)
+    axes.set_ylabel("end to end time per squaring ÷ isolated time", fontsize=9)
+    AddLegend(figure, axes)
+    AddEndLabels(figure, axes, ends)
+    SaveFigure(figure, path)
+
+
+def FftTransformLength(n):
+    """Mirrors FftSetup in FftMul.c: 16-bit digits up to 2048 limbs, 8-bit above, product digits padded to a power of two."""
+    digitsPerLimb = 4 if n <= 2048 else 8
+    length = 2
+
+    while length < 2 * n * digitsPerLimb:
+        length *= 2
+
+    return length
+
+
+def PlotFftStaircase(isolatedMedians, path):
+    figure, axes = NewFigure("FFT cost is set by the padded length", "FFT time per unit of work, relative to its value at 1,024 limbs. The sawtooth is padding; the smooth rise is extra growth.")
+    times = BySize(isolatedMedians, "fft")
+    sizes = sorted(n for n in times if n >= 16)
+    models = [
+        ("time ÷ (n log₂ n)", lambda n: n * math.log2(n), "#898781"),
+        ("time ÷ (N log₂ N), N = padded length", lambda n: FftTransformLength(n) * math.log2(FftTransformLength(n)), SERIES_COLOURS["fft"]),
+    ]
+    allValues = []
+
+    for label, work, colour in models:
+        costs = {n: times[n] / work(n) for n in sizes}
+        values = [costs[n] / costs[1024] for n in sizes]
+        allValues += values
+        PlotLine(axes, sizes, values, colour, label)
+
+    LogSizeAxis(axes, sizes)
+    axes.set_yscale("log")
+    LogRatioAxis(axes, allValues, [0.5, 0.7, 1, 1.5, 2, 3, 4])
+    axes.set_ylabel("relative cost per unit of work", fontsize=9)
+    AddLegend(figure, axes)
+    SaveFigure(figure, path)
+
+
 def PlotThresholdSweep(thresholdMedians, path):
     figure, axes = NewFigure("Karatsuba base case threshold", "Time relative to the best threshold for each size (1× = best), log scale. Pure Karatsuba is threshold 1.")
     plottedSizes = [64, 256, 1024, 4096]
@@ -534,6 +595,8 @@ def Main():
     figures = [
         ("runtime.png", "Time per multiplication", lambda path: PlotRuntime(isolated, path)),
         ("relative_to_gmp.png", "Slowdown relative to GMP", lambda path: PlotRelativeToGmp(isolated, path)),
+        ("end_to_end.png", "End to end vs isolated", lambda path: PlotEndToEnd(endToEnd, isolated, steps, path)),
+        ("fft_staircase.png", "FFT staircase", lambda path: PlotFftStaircase(isolated, path)),
         ("threshold_sweep.png", "Karatsuba threshold sweep", lambda path: PlotThresholdSweep(thresholdMedians, path)),
         ("karatsuba_sawtooth.png", "Karatsuba sawtooth", lambda path: PlotSawtooth(sawtooth, threshold, path)),
     ]

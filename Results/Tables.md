@@ -232,6 +232,10 @@ Per squaring = chain time / steps. Overhead = per squaring time / isolated multi
 
 ![Slowdown relative to GMP](Figures/relative_to_gmp.png)
 
+![End to end vs isolated](Figures/end_to_end.png)
+
+![FFT staircase](Figures/fft_staircase.png)
+
 ![Karatsuba threshold sweep](Figures/threshold_sweep.png)
 
 ![Karatsuba sawtooth](Figures/karatsuba_sawtooth.png)
