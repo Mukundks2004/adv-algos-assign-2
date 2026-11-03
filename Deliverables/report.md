@@ -36,18 +36,18 @@ The key idea is to multiply every limb of `a` by every limb of `b` and add each 
 - The recurrence relation can be calculated via masters theorem to give Theta(n^1.5) time complexity with O(n) space for sums and temporary data
 - It calculates extra additions and has fewer multiplications. This and the recursion make it similar to Strassen's for matrix multiplication.
 - This algo is faster beyond a few dozen limbs, and it does not need the mega FFT machinery
-- It has been implemented by Jack in `Code/KaratsubaMul.c`. His own study, on a different machine, is in `Results/Tables.md`. The table in section 4 is a later harness run on the Ryzen machine, with Karatsuba included.
+- It has been implemented by Jack in `Code/jack/KaratsubaMul.c`. His own study, on a different machine, is in `Results/Tables.md`. The table in section 4 is a later harness run on the Ryzen machine, with Karatsuba included.
 
 ### FFT based
 
 - The key idea is to treat the operands as digit polynomials. They are evaluated at the roots of unity via the FFT algorithm.
-- `FftMul.c` chops each limb into 16-bit digits when `n` is at most 2048 limbs, and 8-bit digits above that, so the complex doubles stay close enough to integers that rounding lands on the exact digit.
+- `Code/mukund/FftMul.c` chops each limb into 16-bit digits when `n` is at most 2048 limbs, and 8-bit digits above that, so the complex doubles stay close enough to integers that rounding lands on the exact digit.
 - Forward FFT, pointwise product, inverse FFT, then carry the digits back into limbs. Scratch (twiddles, digit buffers) is allocated in setup, outside the timer.
 - Time is O(n log n) arithmetic with a smaller constant than the modular transform below, because a double butterfly is cheaper than a multiply mod 2^64 - 2^32 + 1. Extra memory is a handful of length-2^k double arrays.
 
 ### OpenAI preprint (Bailey)
 
-Primary author: Bailey Tucker (24744334), `Code/OpenAiMul.c`.
+Primary author: Bailey Tucker (24744334), `Code/bailey/OpenAiMul.c`.
 
 The preprint is OpenAI, "Integer multiplication below n log n", 23 September 2026. The theorem is a multitape bound, O(n (lg n)^(1-kappa)) with kappa = 2^(-182). Harvey and van der Hoeven had got to O(n log n). This paper says it saves a power of the log. The constants are ridiculous. The writeup tells the machine to use schoolbook below a cutoff, and one of the hypotheses already needs log2(n) past 2^(2^75). We cannot allocate that.
 
@@ -123,11 +123,11 @@ Move the NTT twiddle powers into `OpenAiSetup` and time again. They are recomput
 
 ## 7. Who did what
 
-Mukund set up the repo, the harness, schoolbook, the FFT, and the GMP wrapper. Jack implemented Karatsuba and the experiment pipeline in `Results/`. Bailey wrote `OpenAiMul.c`, checked it against `mpn_mul_n` through the harness, and took the combined table in `Deliverables/local-timings.csv` after merging Jack's code. Bailey records the OpenAI segment. Schoolbook and FFT are Mukund's to explain. Karatsuba is Jack's.
+Mukund set up the repo, the harness, schoolbook, the FFT, and the GMP wrapper. Jack implemented Karatsuba and the experiment pipeline in `Results/`. Bailey wrote `Code/bailey/OpenAiMul.c`, checked it against `mpn_mul_n` through the harness, and took the combined table in `Deliverables/local-timings.csv` after merging Jack's code. Bailey records the OpenAI segment. Schoolbook and FFT are Mukund's to explain. Karatsuba is Jack's.
 
 ## 8. AI use
 
-I used Grok in Cursor for most of OpenAiMul.c. It read the preprint, wrote the first version of the file, and drafted some notes.
+I used Grok in Cursor for most of Code/bailey/OpenAiMul.c. It read the preprint, wrote the first version of the file, and drafted some notes.
 
 The first draft talked as if the timed function was the paper's O(n (lg n)^(1-kappa)) machine. That machine uses schoolbook under a cutoff past log2(n) = 2^(2^75). The function that was timed splits limbs into 16-bit digits and convolves them mod 2^64 - 2^32 + 1. I rewrote this section so the microseconds belong to that code.
 

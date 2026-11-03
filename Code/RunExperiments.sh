@@ -76,7 +76,7 @@ Run()
 
 header="mode,algorithm,n_limbs,iterations,total_ms,per_op_us"
 algorithms=(schoolbook karatsuba fft gmp)
-threshold="$(sed -n 's/^#define KARATSUBA_THRESHOLD \([0-9]*\).*/\1/p' "$codeDir/KaratsubaMul.c")"
+threshold="$(sed -n 's/^#define KARATSUBA_THRESHOLD \([0-9]*\).*/\1/p' "$codeDir/jack/KaratsubaMul.c")"
 
 Build "$buildDir/Benchmark"
 

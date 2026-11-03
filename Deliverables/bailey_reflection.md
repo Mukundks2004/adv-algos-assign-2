@@ -1,6 +1,6 @@
 # Bailey Tucker (24744334)
 
-About my file, `Code/OpenAiMul.c`.
+About my file, `Code/bailey/OpenAiMul.c`.
 
 ## Worst case
 

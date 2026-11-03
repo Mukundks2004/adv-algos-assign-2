@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 /*
- * Rounding error probe for the FFT multiplier. Run with: gcc -O2 Code/FftErrorProbe.c -lm -o FftErrorProbe && ./FftErrorProbe
+ * Rounding error probe for the FFT multiplier. Run with: gcc -O2 Code/mukund/FftErrorProbe.c -lm -o FftErrorProbe && ./FftErrorProbe
  * Uses the same radix-2 transform and twiddle scheme as FftMul.c. For random and all-ones digits it prints the largest
  * distance of any convolution coefficient from an integer before rounding. Rounding is only correct while this stays below 0.5.
  */

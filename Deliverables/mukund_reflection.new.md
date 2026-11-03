@@ -1,6 +1,6 @@
 # Mukund Reflection
 
-My algorithm is the FFT multiplier in `Code/FftMul.c`. It creates polynomial time domain representations of the operands, then performs FFT on both operands, then does a frequency domain multiplication, then an inverse FFT, and finally converts it back into a number. It is a very involved and complicated algorithm, and uses a lot of math!
+My algorithm is the FFT multiplier in `Code/mukund/FftMul.c`. It creates polynomial time domain representations of the operands, then performs FFT on both operands, then does a frequency domain multiplication, then an inverse FFT, and finally converts it back into a number. It is a very involved and complicated algorithm, and uses a lot of math!
 
 ## Worst case
 

@@ -1,7 +1,7 @@
 # Integer Multiplication Benchmark
 
 This project contains the code to compare integer multiplication algorithms against each other and the GMP.
-All code can be found in `Code/`.
+All code can be found in `Code/`. The shared harness (`Harness.c`, `Common.h`, `GmpMul.c`, `Makefile`) is at the top level, and each algorithm is in its author's folder: `Code/mukund/` (schoolbook, FFT, FFT error probe), `Code/jack/` (Karatsuba and its test) and `Code/bailey/` (OpenAI preprint).
 
 The following implementations have been included in our research:
 

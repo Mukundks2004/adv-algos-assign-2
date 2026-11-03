@@ -11,8 +11,8 @@
  *
  * Not part of the benchmark build. From the repository root:
  *
- *     gcc -O1 -g -std=gnu99 -fsanitize=address,undefined -I Code Code/KaratsubaTest.c \
- *         Code/KaratsubaMul.c Code/SchoolbookMul.c -o KaratsubaTest -lgmp && ./KaratsubaTest
+ *     gcc -O1 -g -std=gnu99 -fsanitize=address,undefined -I Code Code/jack/KaratsubaTest.c \
+ *         Code/jack/KaratsubaMul.c Code/mukund/SchoolbookMul.c -o KaratsubaTest -lgmp && ./KaratsubaTest
  *
  * Add -DKARATSUBA_THRESHOLD=k to test other base case cutoffs.
  */

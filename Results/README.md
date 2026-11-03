@@ -133,8 +133,8 @@ Explanation:
 
 **The FFT's time is a staircase.**
 - Within each band from 1.5·2^k to 2^(k+1) limbs its time is flat. For example: 53.7 vs 53.6 µs at 192 and 256 limbs; 326 vs 332 µs at 768 and 1024; 3.83 vs 3.72 ms at 3072 and 4096.
-- The cause is that the transform length is rounded up to the next power of two (`FftMul.c:74-79`), so n = 1.5·2^k pays for 2^(k+1).
-- Going from 2048 to 3072 limbs the time jumps 4.6×: above `SMALL_OPERAND_LIMBS = 2048` the digits shrink from 16 to 8 bits (`FftMul.c:68`), making the transform 4× longer.
+- The cause is that the transform length is rounded up to the next power of two (`Code/mukund/FftMul.c:74-79`), so n = 1.5·2^k pays for 2^(k+1).
+- Going from 2048 to 3072 limbs the time jumps 4.6×: above `SMALL_OPERAND_LIMBS = 2048` the digits shrink from 16 to 8 bits (`Code/mukund/FftMul.c:68`), making the transform 4× longer.
 
 **The FFT scales as about n^1.4, not n log n.**
 - Between 4096 and 131,072 limbs (same position on each step) it grows as about n^1.40, where n log n predicts about n^1.08.
@@ -160,7 +160,7 @@ These are only surprises if they contradict what you wrote in section 2 before m
   - Overruns: canary limbs past `result[2n − 1]` checked for writes past the end. Exact-size scratch, so ASan catches scratch overruns.
   - Monotonicity: one large setup reused for every smaller n, checking that the scratch size is monotone in n.
 - **Mutation check:** two deliberately broken versions were both caught. Flipping the sign case tripped the `carry == 0` assert, and splitting at ⌊n/2⌋ instead of ⌈n/2⌉ produced mismatches.
-- That test program isn't in the repository yet; it's at `KaratsubaTest.c` in Claude's session scratchpad. Add it to `Code/` if the report cites it.
+- That test program is `Code/jack/KaratsubaTest.c`.
 
 ## Notes for the AI-use section (Jack, from the Claude Code session)
 

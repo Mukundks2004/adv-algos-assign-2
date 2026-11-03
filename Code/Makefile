@@ -2,11 +2,11 @@ CC ?= gcc
 CFLAGS ?= -O2 -std=gnu99 -Wall -Wextra
 LDLIBS = -lgmp -lm
 
-SOURCES = Harness.c SchoolbookMul.c FftMul.c KaratsubaMul.c OpenAiMul.c GmpMul.c
+SOURCES = Harness.c mukund/SchoolbookMul.c mukund/FftMul.c jack/KaratsubaMul.c bailey/OpenAiMul.c GmpMul.c
 TARGET = Benchmark
 
 $(TARGET): $(SOURCES) Common.h
-	$(CC) $(CFLAGS) $(SOURCES) -o $(TARGET) $(LDLIBS)
+	$(CC) $(CFLAGS) -I. $(SOURCES) -o $(TARGET) $(LDLIBS)
 
 clean:
 	rm -f $(TARGET) $(TARGET).exe

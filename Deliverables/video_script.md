@@ -16,7 +16,7 @@ We wrote schoolbook, Karatsuba, and an FFT, and one more file for the OpenAI dig
 
 ## 1:05. Slide 3
 
-Schoolbook is the double loop in SchoolbookMul.c. Limb i of a multiplies every limb of b, and the product is added at index i plus j. The high half of that 128-bit product is the carry into the next limb. The invariant is that after limb i is finished, result[i + n] holds the carry out of that row, and every lower limb already includes the partial products that belong there. That carry is the case this loop needs. There is no extra buffer. It is Theta(n squared), so it wins only while n is small.
+Schoolbook is the double loop in Code/mukund/SchoolbookMul.c. Limb i of a multiplies every limb of b, and the product is added at index i plus j. The high half of that 128-bit product is the carry into the next limb. The invariant is that after limb i is finished, result[i + n] holds the carry out of that row, and every lower limb already includes the partial products that belong there. That carry is the case this loop needs. There is no extra buffer. It is Theta(n squared), so it wins only while n is small.
 
 ## 2:15. Slide 4
 
@@ -60,7 +60,7 @@ That padding is why the FFT time can sit flat across a band of sizes, and the 8-
 
 ## 8:10. Slide 14
 
-This file is OpenAiMul.c. The invariant, the case that forces it, and what breaks if it is dropped. The preprint is a multitape bound with kappa equal to 2 to the minus 182. That machine uses schoolbook below a cutoff past log n equals 2 to the 2 to the 75. We do not run that machine.
+This file is Code/bailey/OpenAiMul.c. The invariant, the case that forces it, and what breaks if it is dropped. The preprint is a multitape bound with kappa equal to 2 to the minus 182. That machine uses schoolbook below a cutoff past log n equals 2 to the 2 to the 75. We do not run that machine.
 
 ## 8:30. Slide 15
 

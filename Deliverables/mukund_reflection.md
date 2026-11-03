@@ -1,6 +1,6 @@
 # Mukund Reflection
 
-My algorithm is the complex double precision FFT multiplier in `Code/FftMul.c`. It splits each operand into digits, convolves them with a radix-2 FFT, rounds, and carries.
+My algorithm is the complex double precision FFT multiplier in `Code/mukund/FftMul.c`. It splits each operand into digits, convolves them with a radix-2 FFT, rounds, and carries.
 
 ## Worst case
 

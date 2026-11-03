@@ -303,7 +303,7 @@ def PlotEndToEnd(endToEndMedians, isolatedMedians, steps, path):
 
 
 def FftTransformLength(n):
-    """Mirrors FftSetup in FftMul.c: 16-bit digits up to 2048 limbs, 8-bit above, product digits padded to a power of two."""
+    """Mirrors FftSetup in Code/mukund/FftMul.c: 16-bit digits up to 2048 limbs, 8-bit above, product digits padded to a power of two."""
     digitsPerLimb = 4 if n <= 2048 else 8
     length = 2
 
